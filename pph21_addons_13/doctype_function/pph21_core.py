@@ -41,8 +41,8 @@ def calculate_pajak(pkp, use_npwp=True):
 
 def calculate_tarif_pajak_ter(golongan, brutto_gaji, month ,year, employee,year_to_date, use_npwp=True):
 	ptkp = calculate_ptkp(year_to_date, golongan)
-	if(ptkp==0):
-		return False	
+	# if(ptkp==0):
+	# 	return False	
 	
 	get_data_tarif = frappe.db.sql("""
 		SELECT
@@ -126,7 +126,7 @@ def calculate_tax(self, method):
 	# bruto_gaji = sum(item['amount'] for item in self.earnings if item['is_tax_applicable'] == 1)
 	
 	nominal_pph21_ter = calculate_tarif_pajak_ter(self.pkp_status, bruto_gaji, month_int,year_int, self.employee, self.year_to_date, self.npwp != "")
-	if(nominal_pph21_ter):
+	if(not nominal_pph21_ter):
 		return 
 
 	# GROSS UP PPH21
