@@ -9,6 +9,18 @@ app_color = "grey"
 app_email = "das@das.com"
 app_license = "MIT"
 
+fixtures = [ 
+		{
+			"dt": "Custom Field", 
+			"filters":[["name", "in", ['Employee-no_ktp', 'Employee-use_npwp', 'Employee-npwp', 'Employee-pkp_status', 
+			'Salary Slip-no_ktp', 'Salary Slip-npwp','Salary Slip-pkp_status','Salary Structure Assignment-pph_21_gross_up']]]
+		},
+        {
+			"dt": "PPh21 TER Master",
+			"filters":[["name", "in", ['TER A', 'TER B', 'TER C']]]
+		},
+	]
+
 # Includes in <head>
 # ------------------
 
@@ -95,13 +107,16 @@ app_license = "MIT"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-#	}
-# }
+doc_events = {
+	# "*": {
+	# 	"on_update": "method",
+	# 	"on_cancel": "method",
+	# 	"on_trash": "method"
+	# }
+	"Salary Slip": {
+        "validate": "pph21_addons.doctype_function.pph21_core.calculate_tax"
+    }
+}
 
 # Scheduled Tasks
 # ---------------

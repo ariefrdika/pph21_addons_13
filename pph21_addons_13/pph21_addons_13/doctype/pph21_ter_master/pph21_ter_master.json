@@ -1,0 +1,68 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "creation": "2024-06-24 11:00:49.417159",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "name1",
+  "column_break_pmmrn",
+  "detail_golongan_ter",
+  "section_break_1ru5o",
+  "detail_ter"
+ ],
+ "fields": [
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_pmmrn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "detail_golongan_ter",
+   "fieldtype": "Table",
+   "label": "Detail Golongan TER",
+   "options": "Detail Golongan TER"
+  },
+  {
+   "fieldname": "section_break_1ru5o",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "detail_ter",
+   "fieldtype": "Table",
+   "label": "Detail TER",
+   "options": "Detail TER"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-06-24 11:00:49.417159",
+ "modified_by": "Administrator",
+ "module": "Pph21 Addons 13",
+ "name": "PPh21 TER Master",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

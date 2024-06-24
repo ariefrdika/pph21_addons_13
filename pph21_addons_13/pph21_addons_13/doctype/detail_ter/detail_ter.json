@@ -1,0 +1,44 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-06-24 10:59:52.524896",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "batas_bawah",
+  "batas_atas",
+  "tarif_pajak"
+ ],
+ "fields": [
+  {
+   "fieldname": "batas_bawah",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Batas Bawah"
+  },
+  {
+   "fieldname": "batas_atas",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Batas Atas"
+  },
+  {
+   "fieldname": "tarif_pajak",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Tarif Pajak"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-06-24 10:59:52.524896",
+ "modified_by": "Administrator",
+ "module": "Pph21 Addons 13",
+ "name": "Detail TER",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

@@ -1,0 +1,31 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-06-24 11:00:23.910716",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "status_golongan"
+ ],
+ "fields": [
+  {
+   "fieldname": "status_golongan",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status Golongan",
+   "options": "TK0\nTK1\nTK2\nTK3\nK0\nK1\nK2\nK3"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-06-24 11:00:23.910716",
+ "modified_by": "Administrator",
+ "module": "Pph21 Addons 13",
+ "name": "Detail Golongan TER",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}
