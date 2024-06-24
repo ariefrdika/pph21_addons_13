@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include pph21_addons_13 *.css
+recursive-include pph21_addons_13 *.csv
+recursive-include pph21_addons_13 *.html
+recursive-include pph21_addons_13 *.ico
+recursive-include pph21_addons_13 *.js
+recursive-include pph21_addons_13 *.json
+recursive-include pph21_addons_13 *.md
+recursive-include pph21_addons_13 *.png
+recursive-include pph21_addons_13 *.py
+recursive-include pph21_addons_13 *.svg
+recursive-include pph21_addons_13 *.txt
+recursive-exclude pph21_addons_13 *.pyc
