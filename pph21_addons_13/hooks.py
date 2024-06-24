@@ -114,7 +114,7 @@ doc_events = {
 	# 	"on_trash": "method"
 	# }
 	"Salary Slip": {
-        "validate": "pph21_addons.doctype_function.pph21_core.calculate_tax"
+        "validate": "pph21_addons_13.doctype_function.pph21_core.calculate_tax"
     }
 }
 
