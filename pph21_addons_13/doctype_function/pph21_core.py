@@ -39,7 +39,7 @@ def calculate_pajak(pkp, use_npwp=True):
 		return 0
 	return math.ceil(pajak) if use_npwp else math.ceil(pajak)*1.2
 
-def calculate_tarif_pajak_ter(golongan, brutto_gaji, month ,year, employee, year_to_date, doc, use_npwp=True):		
+def calculate_tarif_pajak_ter(golongan, brutto_gaji, month ,year, employee, year_to_date, doc, use_npwp=True):
 	get_data_tarif = frappe.db.sql("""
 		SELECT
 			dter.tarif_pajak
@@ -129,7 +129,7 @@ def calculate_tax(self, method):
 	if(not self.pkp_status):
 		return 
 
-	nominal_pph21_ter = calculate_tarif_pajak_ter(self.pkp_status, bruto_gaji, month_int,year_int, self.employee, self.year_to_date, self.npwp != "")	
+	nominal_pph21_ter = calculate_tarif_pajak_ter(self.pkp_status, bruto_gaji, month_int,year_int, self.employee, self.year_to_date, self, self.npwp != "")	
 
 	# GROSS UP PPH21
 	is_gross_up = frappe.get_value("Salary Structure Assignment", {"employee":self.employee, "salary_structure":self.salary_structure}, "pph_21_gross_up")
