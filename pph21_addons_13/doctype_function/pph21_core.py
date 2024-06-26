@@ -39,11 +39,7 @@ def calculate_pajak(pkp, use_npwp=True):
 		return 0
 	return math.ceil(pajak) if use_npwp else math.ceil(pajak)*1.2
 
-def calculate_tarif_pajak_ter(golongan, brutto_gaji, month ,year, employee,year_to_date, use_npwp=True):
-	ptkp = calculate_ptkp(year_to_date, golongan)
-	# if(ptkp==0):
-	# 	return False	
-	
+def calculate_tarif_pajak_ter(golongan, brutto_gaji, month ,year, employee, year_to_date, doc, use_npwp=True):		
 	get_data_tarif = frappe.db.sql("""
 		SELECT
 			dter.tarif_pajak
@@ -65,6 +61,14 @@ def calculate_tarif_pajak_ter(golongan, brutto_gaji, month ,year, employee,year_
 		pph21_ter_version = flt(brutto_gaji*(get_data_tarif[0]['tarif_pajak']/100))
 
 		if (12 - month)==0:
+			is_biaya_jabatan_akhir_tahun = frappe.get_value("Salary Structure Assignment", {"employee": doc.employee, "salary_structure":doc.salary_structure}, "biaya_jabatan_akhir_tahun")
+			if(is_biaya_jabatan_akhir_tahun):
+				year_to_date = flt(year_to_date * 0.05) if flt(year_to_date * 0.05)<6000000 else 6000000
+			
+			ptkp = calculate_ptkp(year_to_date, golongan)
+			# if(ptkp==0):
+			# 	return False
+
 			pph21 = calculate_pajak(ptkp, use_npwp)
 
 			get_pph21_ter_per_11 = frappe.db.sql("""
@@ -77,15 +81,12 @@ def calculate_tarif_pajak_ter(golongan, brutto_gaji, month ,year, employee,year_
 				WHERE
 					sp.employee = '{0}' AND sd.salary_component = 'PPH21 TER' 
 				AND sp.end_date <= "{1}-11-30" and sp.end_date> "{1}-01-01" and sp.docstatus=1
-			""".format(employee), as_list=1)
-			# pph21_ter_version = pph21-(pph21_ter_version*11)
+			""".format(employee, year), as_list=1)
+
 			pph_done=0
 			for row in get_pph21_ter_per_11:
 				pph_done=flt(row[0])
 			pph21_ter_version = pph21-pph_done
-			# return ((pph21_ter_version))
-		# else:
-		# 	return (pph21-(pph21_ter_version*11))
 
 		return pph21_ter_version if use_npwp else pph21_ter_version*1.2
 
@@ -157,5 +158,7 @@ def calculate_tax(self, method):
 		for i in self.deductions:
 			if i.salary_component == 'PPH21 TER':
 				i.amount = nominal_pph21_ter
+	
+	self.set_totals()
 	# frappe.throw(str(nominal_pph21_ter))
 	# frappe.throw(str())

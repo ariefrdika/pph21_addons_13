@@ -13,7 +13,7 @@ fixtures = [
 		{
 			"dt": "Custom Field", 
 			"filters":[["name", "in", ['Employee-no_ktp', 'Employee-use_npwp', 'Employee-npwp', 'Employee-pkp_status', 
-			'Salary Slip-no_ktp', 'Salary Slip-npwp','Salary Slip-pkp_status','Salary Structure Assignment-pph_21_gross_up']]]
+			'Salary Slip-no_ktp', 'Salary Slip-npwp','Salary Slip-pkp_status','Salary Structure Assignment-pph_21_gross_up', 'Salary Structure Assignment-biaya_jabatan_akhir_tahun']]]
 		},
         {
 			"dt": "PPh21 TER Master",
