@@ -159,6 +159,28 @@ def calculate_tax(self, method):
 			if i.salary_component == 'PPH21 TER':
 				i.amount = nominal_pph21_ter
 	
-	self.set_totals()
+	# self.set_totals()
+	
+
+	self.gross_pay = 0.0
+	if self.salary_slip_based_on_timesheet == 1:
+		self.calculate_total_for_salary_slip_based_on_timesheet()
+	else:
+		self.total_deduction = 0.0
+		if hasattr(self, "earnings"):
+			for earning in self.earnings:
+				if earning.do_not_include_in_total == 0:
+					self.gross_pay += flt(earning.amount, earning.precision("amount"))
+
+		if hasattr(self, "deductions"):
+			for deduction in self.deductions:
+				if deduction.do_not_include_in_total == 0:
+					self.total_deduction += flt(deduction.amount, deduction.precision("amount"))
+
+		self.net_pay = (
+			flt(self.gross_pay) - flt(self.total_deduction) - flt(self.get("total_loan_repayment"))
+		)
+	self.set_base_totals()
+
 	# frappe.throw(str(nominal_pph21_ter))
 	# frappe.throw(str())
