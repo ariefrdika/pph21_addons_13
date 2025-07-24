@@ -4,11 +4,7 @@ from datetime import datetime
 import math
 
 def calculate_ptkp(pkp, pkp_status):
-	# pkp = penghasilan bruto, pkp_status = TK0, dkk
-	# pkp = calculate_ptkp((brutto_net - biaya_jabatan ),pkp_status)
 	ptkp = {"TK0":54000000, "TK1":58500000, "TK2":63000000, "TK3":67500000,"K0":58500000,"K1":63000000,"K2":67500000,"K3":72000000}
-	# frappe.throw("pkp before: {}, status: {}, ptkp: {}".format(pkp,pkp_status,ptkp[pkp_status]))
-	# frappe.throw(str(pkp > ptkp[pkp_status]))
 	if pkp > ptkp[pkp_status]:
 		pkp = pkp - ptkp[pkp_status]
 	else:
@@ -19,7 +15,6 @@ def calculate_ptkp(pkp, pkp_status):
 
 def calculate_pajak(pkp, use_npwp=True):
 	# PPH21 jika mengunakan npwp, jika tidak outputnya di kali * 1.2
-	# pajak = calculate_pajak(pkp)
 	pajak = 0
 	pkp = math.floor(pkp/1000) * 1000
 	if pkp != 0:
@@ -33,13 +28,13 @@ def calculate_pajak(pkp, use_npwp=True):
 					pajak = 31500000 + ((pkp - 250000000) * 0.25)
 				else:
 					pajak = 94000000 + ((pkp - 500000000) * 0.3)
-
-			# frappe.msgprint("pajak 3: {}".format(pajak))
 	else:
 		return 0
 	return math.ceil(pajak) if use_npwp else math.ceil(pajak)*1.2
 
-def calculate_tarif_pajak_ter(golongan, brutto_gaji, month ,year, employee, year_to_date, doc, use_npwp=True):
+def calculate_tarif_pajak_ter(golongan, brutto_gaji, month ,year, employee, year_to_date, doc, is_gross_up, use_npwp=True):
+	condition = ">=" if is_gross_up != 1 else ">"
+ 
 	get_data_tarif = frappe.db.sql("""
 		SELECT
 			dter.tarif_pajak
@@ -50,15 +45,21 @@ def calculate_tarif_pajak_ter(golongan, brutto_gaji, month ,year, employee, year
 					dgolter.parent 
 				FROM `tabDetail Golongan TER` dgolter
 				WHERE 
-					dgolter.status_golongan = '{}'
+					dgolter.status_golongan = %s
 			)
-			AND dter.batas_bawah <= {}
-			AND dter.batas_atas >= {}
-		LIMIT 1
-	""".format(golongan, brutto_gaji, brutto_gaji), as_dict=1)
-
+			AND dter.batas_bawah <= %s
+			AND dter.batas_atas {condition} %s
+		ORDER BY dter.idx ASC
+		LIMIT 1		
+	""".format(condition=condition),(golongan, brutto_gaji, brutto_gaji), as_dict=1)
+	
 	if(get_data_tarif and get_data_tarif[0]):
-		pph21_ter_version = flt(brutto_gaji*(get_data_tarif[0]['tarif_pajak']/100))
+		persen_ter = get_data_tarif[0]['tarif_pajak']/100
+		print(f"brutto_gaji {brutto_gaji} {persen_ter}")
+		if is_gross_up:
+			pph21_ter_version = flt((brutto_gaji/(1-persen_ter))*persen_ter)
+		else:
+			pph21_ter_version = flt(brutto_gaji*(persen_ter))
 
 		if (12 - month)==0:
 			is_biaya_jabatan_akhir_tahun = frappe.get_value("Salary Structure Assignment", {"employee": doc.employee, "salary_structure":doc.salary_structure}, "biaya_jabatan_akhir_tahun")
@@ -66,9 +67,6 @@ def calculate_tarif_pajak_ter(golongan, brutto_gaji, month ,year, employee, year
 				year_to_date = flt(year_to_date * 0.05) if flt(year_to_date * 0.05)<6000000 else 6000000
 			
 			ptkp = calculate_ptkp(year_to_date, golongan)
-			# if(ptkp==0):
-			# 	return False
-
 			pph21 = calculate_pajak(ptkp, use_npwp)
 
 			get_pph21_ter_per_11 = frappe.db.sql("""
@@ -83,10 +81,7 @@ def calculate_tarif_pajak_ter(golongan, brutto_gaji, month ,year, employee, year
 				AND sp.end_date <= "{1}-11-30" and sp.end_date> "{1}-01-01" and sp.docstatus=1
 			""".format(employee, year), as_list=1)
 
-			pph_done=0
-			for row in get_pph21_ter_per_11:
-				pph_done=flt(row[0])
-			pph21_ter_version = pph21-pph_done
+			pph21_ter_version = pph21 - (get_pph21_ter_per_11[0] if get_pph21_ter_per_11 and get_pph21_ter_per_11[0] else 0)
 
 		return pph21_ter_version if use_npwp else pph21_ter_version*1.2
 
@@ -98,8 +93,8 @@ def create_salary_component_pph21_ter_gross_up():
 		doc.salary_component = "PPH21 TER Gross Up"
 		doc.salary_component_abbr = "pphtergu"
 		doc.type = "Earning"
-		doc.depends_on_payment_days = 1
-		doc.is_tax_applicable = 0		
+		doc.depends_on_payment_days = 0
+		doc.is_tax_applicable = 1		
 
 		doc.save()
 		frappe.db.commit()
@@ -119,20 +114,27 @@ def calculate_tax(self, method):
 	date_obj = getdate(self.end_date)
 	month_int = date_obj.month
 	year_int=date_obj.year
-	# bruto_gaji = self.gross_pay
-	bruto_gaji=0
+	
+	# GROSS UP PPH21
+	is_gross_up = frappe.get_value("Salary Structure Assignment", {"employee":self.employee, "salary_structure":self.salary_structure}, "pph_21_gross_up")
+	print(is_gross_up)
+ 
+	bruto_gaji = 0
+	earnings_to_remove = []
 	for item in self.earnings:
-		if item.is_tax_applicable==1:
-			bruto_gaji=bruto_gaji+flt(item.amount)
-	# bruto_gaji = sum(item['amount'] for item in self.earnings if item['is_tax_applicable'] == 1)
+		if item.is_tax_applicable==1 and item.salary_component != 'PPH21 TER Gross Up':
+			bruto_gaji += flt(item.amount)
+
+		if item.salary_component == 'PPH21 TER Gross Up' and not is_gross_up:
+			earnings_to_remove.append(item)
+	
+	for item in earnings_to_remove:
+		self.earnings.remove(item)
 
 	if(not self.pkp_status):
 		return 
-
-	nominal_pph21_ter = calculate_tarif_pajak_ter(self.pkp_status, bruto_gaji, month_int,year_int, self.employee, self.year_to_date, self, self.npwp != "")	
-
-	# GROSS UP PPH21
-	is_gross_up = frappe.get_value("Salary Structure Assignment", {"employee":self.employee, "salary_structure":self.salary_structure}, "pph_21_gross_up")
+	
+	nominal_pph21_ter = calculate_tarif_pajak_ter(self.pkp_status, bruto_gaji, month_int,year_int, self.employee, self.year_to_date, self, is_gross_up, self.npwp != "")		
 	if(is_gross_up):
 		check_alredy_salary_component_pph21_earnings = any(d.get("salary_component") == 'PPH21 TER Gross Up' for d in self.earnings)
 		if(not check_alredy_salary_component_pph21_earnings):
@@ -143,7 +145,7 @@ def calculate_tax(self, method):
 			})
 		if(self.earnings):
 			for i in self.earnings:
-				if i.salary_component == 'PPH21 TER Gross Up':
+				if i.salary_component == 'PPH21 TER Gross Up':	
 					i.amount = nominal_pph21_ter
 
 	
